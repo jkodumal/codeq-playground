@@ -6,18 +6,37 @@ mkdir -p deps
 cd deps
 
 # Datomic
-[[ -d datomic ]] && rm -rf datomic
 datomic_release_url="http://downloads.datomic.com/0.8.4143/datomic-free-0.8.4143.zip"
-echo "=> Fetching Datomic Free from $datomic_release_url..."
-curl -O -s $datomic_release_url
-unzip $(basename $datomic_release_url .zip)
-mv $(basename $datomic_release_url .zip) datomic
-rm $(basename $datomic_release_url)
+
+if [ -n "$1" ] && [ "$1" = "clean" ]; then
+	echo "=> Deleting datomic and codeq"
+	rm -rf datomic
+	rm -rf codeq
+fi
+
+if ! [ -d datomic ]; then
+	echo "=> Fetching Datomic Free from $datomic_release_url..."
+	curl -O -s $datomic_release_url
+	unzip $(basename $datomic_release_url .zip)
+	mv $(basename $datomic_release_url .zip) datomic
+	rm $(basename $datomic_release_url)
+fi
 
 # Codeq
-[[ -d codeq ]] && rm -rf codeq
-echo "=> Fetching catamorphic's codeq fork from GitHub.."
-git clone https://github.com/catamorphic/codeq-catamorphic
-cd codeq
-echo "=> Building codeq jar..."
-lein uberjar
+if ! [ -d codeq ]; then
+	echo "=> Fetching catamorphic's codeq fork from GitHub.."
+	git clone git@github.com:catamorphic/codeq-catamorphic.git codeq
+	cd codeq
+	lein uberjar
+else
+	REPO_STATUS=$(git pull)
+	if [ -f codeq/target/codeq-0.1.0-SNAPSHOT-standalone.jar ] && [[ $REPO_STATUS = "Already up-to-date." ]]; then
+		echo "=> Codeq jar is already up to date."
+	else 
+		cd codeq
+		lein uberjar
+	fi
+fi 
+
+
+

@@ -3,7 +3,7 @@
             [clojure.pprint :refer [pprint]]))
 
  ;; Change me to the db-name you used when running ./script/analyze-repo
-(def db-name "clojure")
+(def db-name "clojure-test")
 
 (def uri (str "datomic:free://localhost:4334/" db-name))
 (def conn (d/connect uri))
