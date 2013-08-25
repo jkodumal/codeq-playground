@@ -73,6 +73,31 @@
     [(file-commits ?f ?c) (object-nodes ?f ?n) [?c :commit/tree ?n]]
     [(codeq-commits ?cq ?c) [?cq :codeq/file ?f] (file-commits ?f ?c)]])
 
+
+(defn filenames [] (d/q '[:find ?name :where [_ :file/name ?name]] db))
+
+(defn filenames-for-commit [sha]
+  (d/q '[:find ?name 
+         :in $ % ?sha
+         :where
+         [?commit :git/sha ?sha]
+         (commit-files ?commit ?file)
+         [?n :node/object ?file]
+         [?n :node/paths ?f]
+         [?f :file/name ?name]]
+    db rules sha))
+
+(defn tree-for-commit [sha]
+  (ffirst (d/q '[:find ?tree
+         :in $ ?sha 
+         :where
+         [?commit :git/sha ?sha]
+         [?commit :commit/tree ?node] 
+         [?node :node/object ?tree] 
+         [?tree :git/type :tree]]
+    db sha)))
+
+
 (defn find-commits-for-fn
   [fq-fn]
   (d/q '[:find ?src (min ?date)
