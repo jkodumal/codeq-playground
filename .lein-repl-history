@@ -1,0 +1,3 @@
+(use 'com.thinkslate.codeq-playground.core)
+(use `com.thinkslate.codeq-playground.core)
+(require '[datomic.api :as d])
